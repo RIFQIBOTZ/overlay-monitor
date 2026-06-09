@@ -1,0 +1,6 @@
+{
+  "name": "Overlay Monitor",
+  "description": "A floating hardware monitor showing real-time battery and system RAM metrics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
