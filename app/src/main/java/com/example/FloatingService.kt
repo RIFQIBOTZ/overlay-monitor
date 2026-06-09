@@ -160,86 +160,71 @@ class FloatingService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedSta
         batteryTemp: Float?, ramUsage: Int?, cpuTemp: Float?, cpuUsage: Int?,
         showBattery: Boolean, showRam: Boolean, showCpuTemp: Boolean, showCpuUsage: Boolean
     ) {
-        val rogRed   = Color(0xFFCC0000)
-        val rogWhite = Color(0xFFFFFFFF)
-        val rogGray  = Color(0xFF999999)
-        val bgColor  = Color(0xEE000000)
+        val rogRed    = Color(0xFFCC0000)
+        val rogWhite  = Color(0xFFFFFFFF)
+        val rogGray   = Color(0xFF888888)
+        val rogYellow = Color(0xFFFFCC00)
+        val rogCyan   = Color(0xFF00CCFF)
+        val rogOrange = Color(0xFFFF6B00)
+        val bgColor   = Color(0xE6000000)
 
-        // Build list of metric pairs
-        val metrics = mutableListOf<Pair<String, String>>()
-        if (showBattery) {
-            val v = if (cpuUsage != null) "${cpuUsage}%" else "--%"
-            metrics.add("CPU" to v)
-        }
-        if (showRam) {
-            val v = if (ramUsage != null) "$ramUsage%" else "--%"
-            metrics.add("RAM" to v)
-        }
-        if (showBattery) {
-            val v = if (batteryTemp != null) "${String.format("%.0f", batteryTemp)}%" else "--%"
-            metrics.add("BAT" to v)
-        }
-        if (showCpuTemp) {
-            val v = if (cpuTemp != null && cpuTemp > 0f) "${String.format("%.0f", cpuTemp)}°C" else "--°C"
-            metrics.add("TEMP" to v)
-        }
-        if (showCpuUsage) {
-            val v = if (cpuUsage != null) "$cpuUsage%" else "--%"
-            metrics.add("CPU%" to v)
-        }
+        data class Metric(val label: String, val value: String, val valueColor: Color)
+
+        val metrics = mutableListOf<Metric>()
+        if (showCpuUsage) metrics.add(Metric("CPU",  "${cpuUsage ?: "--"}%", rogYellow))
+        if (showRam)      metrics.add(Metric("RAM",  "${ramUsage ?: "--"}%", rogCyan))
+        if (showBattery)  metrics.add(Metric("BAT",  "${if (batteryTemp != null) String.format("%.0f", batteryTemp) else "--"}%", rogWhite))
+        if (showCpuTemp)  metrics.add(Metric("TEMP", "${if (cpuTemp != null && cpuTemp > 0f) String.format("%.1f", cpuTemp) else "--"}°C", rogOrange))
 
         if (metrics.isEmpty()) return
 
         Row(
             modifier = Modifier
-                .background(bgColor, shape = RoundedCornerShape(4.dp))
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(0.dp)
+                .background(bgColor, shape = RoundedCornerShape(3.dp))
+                .padding(horizontal = 8.dp, vertical = 5.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // ROG icon box
+            // ROG icon merah
             Box(
                 modifier = Modifier
-                    .size(16.dp)
+                    .size(14.dp)
                     .background(rogRed, shape = RoundedCornerShape(2.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text("✕", color = rogWhite, fontSize = 8.sp, fontWeight = FontWeight.Black)
+                Text("✕", color = rogWhite, fontSize = 7.sp, fontWeight = FontWeight.Black)
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(7.dp))
 
-            metrics.forEachIndexed { index, (label, value) ->
+            metrics.forEachIndexed { index, metric ->
                 if (index > 0) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(14.dp)
+                            .background(rogGray.copy(alpha = 0.35f))
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = " | ",
-                        color = rogGray.copy(alpha = 0.5f),
-                        fontSize = 10.sp,
-                        fontFamily = FontFamily.Monospace
+                        text = metric.label,
+                        color = rogGray,
+                        fontSize = 8.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Normal,
+                        lineHeight = 9.sp
+                    )
+                    Text(
+                        text = metric.value,
+                        color = metric.valueColor,
+                        fontSize = 11.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 12.sp
                     )
                 }
-                // Icon per metrik mirip ROG
-                val icon = when (label) {
-                    "CPU"  -> "▣"
-                    "RAM"  -> "▤"
-                    "BAT"  -> "▪"
-                    "TEMP" -> "▲"
-                    "CPU%" -> "◈"
-                    else   -> ""
-                }
-                Text(
-                    text = "$icon ",
-                    color = rogGray,
-                    fontSize = 9.sp,
-                    fontFamily = FontFamily.Monospace
-                )
-                Text(
-                    text = value,
-                    color = rogWhite,
-                    fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
-                )
             }
         }
     }
