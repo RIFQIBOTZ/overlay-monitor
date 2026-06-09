@@ -297,8 +297,10 @@ fun GameGenieScreen(
                 val metrics = mutableListOf<String>()
                 if (showBatteryTemp) metrics.add("▣ ${cpuUsage ?: "--"}%")
                 if (showRamUsage)    metrics.add("▤ RAM:${ramUsage ?: "--"}%")
-                if (showBatteryTemp) metrics.add("▪ BAT:${if (batteryTemp != null) String.format("%.0f", batteryTemp) else "--"}%")
-                if (showCpuTemp)     metrics.add("▲ ${if (cpuTemp != null && cpuTemp > 0f) String.format("%.0f", cpuTemp) else "--"}°C")
+                val b = batteryTemp
+                if (showBatteryTemp) metrics.add("▪ BAT:${if (b != null) String.format("%.0f", b) else "--"}%")
+                val c = cpuTemp
+                if (showCpuTemp)     metrics.add("▲ ${if (c != null && c > 0f) String.format("%.0f", c) else "--"}°C")
 
                 Box(
                     modifier = Modifier
