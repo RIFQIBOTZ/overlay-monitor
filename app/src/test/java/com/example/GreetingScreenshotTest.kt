@@ -23,17 +23,19 @@ class GreetingScreenshotTest {
   fun greeting_screenshot() {
     composeTestRule.setContent {
       MyApplicationTheme(dynamicColor = false) {
-        SettingsScreen(
+        GameGenieScreen(
           isPermissionGranted = true,
           isServiceRunning = true,
           showBatteryTemp = true,
           showRamUsage = true,
           showCpuTemp = true,
           showCpuUsage = true,
+          overlayOpacity = 90f,
           onToggleBattery = {},
           onToggleRam = {},
           onToggleCpuTemp = {},
           onToggleCpuUsage = {},
+          onOpacityChange = {},
           onRequestPermission = {},
           onStartService = {},
           onStopService = {}

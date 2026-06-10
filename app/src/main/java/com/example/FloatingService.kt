@@ -59,6 +59,7 @@ class FloatingService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedSta
     private val showRamFlow      = MutableStateFlow(true)
     private val showCpuTempFlow  = MutableStateFlow(true)
     private val showCpuUsageFlow = MutableStateFlow(true)
+    private val opacityFlow      = MutableStateFlow(90f)
 
     override fun onCreate() {
         super.onCreate()
@@ -71,6 +72,7 @@ class FloatingService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedSta
         showRamFlow.value      = prefs.getBoolean("show_ram_usage", true)
         showCpuTempFlow.value  = prefs.getBoolean("show_cpu_temp", true)
         showCpuUsageFlow.value = prefs.getBoolean("show_cpu_usage", true)
+        opacityFlow.value      = prefs.getFloat("overlay_opacity", 90f)
         prefs.registerOnSharedPreferenceChangeListener(preferenceListener)
 
         if (!Settings.canDrawOverlays(this)) { stopSelf(); return }
@@ -84,6 +86,7 @@ class FloatingService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedSta
             "show_ram_usage"    -> showRamFlow.value      = sharedPrefs.getBoolean(key, true)
             "show_cpu_temp"     -> showCpuTempFlow.value  = sharedPrefs.getBoolean(key, true)
             "show_cpu_usage"    -> showCpuUsageFlow.value = sharedPrefs.getBoolean(key, true)
+            "overlay_opacity"   -> opacityFlow.value      = sharedPrefs.getFloat(key, 90f)
         }
     }
 
@@ -116,6 +119,7 @@ class FloatingService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedSta
                 val showRam       by showRamFlow.collectAsState()
                 val showCpuTempS  by showCpuTempFlow.collectAsState()
                 val showCpuUsageS by showCpuUsageFlow.collectAsState()
+                val opacity       by opacityFlow.collectAsState()
 
                 RogOverlay(
                     batteryTemp  = batteryTemp,
@@ -125,7 +129,8 @@ class FloatingService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedSta
                     showBattery  = showBattery,
                     showRam      = showRam,
                     showCpuTemp  = showCpuTempS,
-                    showCpuUsage = showCpuUsageS
+                    showCpuUsage = showCpuUsageS,
+                    bgOpacity    = opacity / 100f
                 )
             }
         }
@@ -158,7 +163,8 @@ class FloatingService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedSta
     @Composable
     private fun RogOverlay(
         batteryTemp: Float?, ramUsage: Int?, cpuTemp: Float?, cpuUsage: Int?,
-        showBattery: Boolean, showRam: Boolean, showCpuTemp: Boolean, showCpuUsage: Boolean
+        showBattery: Boolean, showRam: Boolean, showCpuTemp: Boolean, showCpuUsage: Boolean,
+        bgOpacity: Float  // hanya background yang transparan, teks tetap solid
     ) {
         val rogRed    = Color(0xFFCC0000)
         val rogWhite  = Color(0xFFFFFFFF)
@@ -166,14 +172,16 @@ class FloatingService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedSta
         val rogYellow = Color(0xFFFFCC00)
         val rogCyan   = Color(0xFF00CCFF)
         val rogOrange = Color(0xFFFF6B00)
-        val bgColor   = Color(0xE6000000)
+
+        // Hanya alpha background yang dipengaruhi opacity, warna teks tetap 1.0f
+        val bgColor = Color(0xFF000000).copy(alpha = bgOpacity * 0.92f)
 
         data class Metric(val label: String, val value: String, val valueColor: Color)
 
         val metrics = mutableListOf<Metric>()
         if (showCpuUsage) metrics.add(Metric("CPU",  "${cpuUsage ?: "--"}%", rogYellow))
         if (showRam)      metrics.add(Metric("RAM",  "${ramUsage ?: "--"}%", rogCyan))
-        if (showBattery)  metrics.add(Metric("BAT",  "${if (batteryTemp != null) String.format("%.0f", batteryTemp) else "--"}%", rogWhite))
+        if (showBattery)  metrics.add(Metric("BAT",  "${if (batteryTemp != null) String.format("%.1f", batteryTemp) else "--"}°C", rogWhite))
         if (showCpuTemp)  metrics.add(Metric("TEMP", "${if (cpuTemp != null && cpuTemp > 0f) String.format("%.1f", cpuTemp) else "--"}°C", rogOrange))
 
         if (metrics.isEmpty()) return
@@ -184,11 +192,9 @@ class FloatingService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedSta
                 .padding(horizontal = 8.dp, vertical = 5.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // ROG icon merah
+            // Icon ROG — tetap solid
             Box(
-                modifier = Modifier
-                    .size(14.dp)
-                    .background(rogRed, shape = RoundedCornerShape(2.dp)),
+                modifier = Modifier.size(14.dp).background(rogRed, shape = RoundedCornerShape(2.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text("✕", color = rogWhite, fontSize = 7.sp, fontWeight = FontWeight.Black)
@@ -199,15 +205,11 @@ class FloatingService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedSta
             metrics.forEachIndexed { index, metric ->
                 if (index > 0) {
                     Spacer(modifier = Modifier.width(6.dp))
-                    Box(
-                        modifier = Modifier
-                            .width(1.dp)
-                            .height(14.dp)
-                            .background(rogGray.copy(alpha = 0.35f))
-                    )
+                    Box(modifier = Modifier.width(1.dp).height(14.dp).background(rogGray.copy(alpha = 0.35f)))
                     Spacer(modifier = Modifier.width(6.dp))
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // Label dan nilai tetap solid (alpha 1.0f)
                     Text(
                         text = metric.label,
                         color = rogGray,
