@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/widget_background"
+    android:padding="8dp">
+
+    <!-- ROG icon merah -->
+    <TextView
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:text="✕"
+        android:textColor="#FFFFFF"
+        android:textSize="9sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:background="@drawable/widget_icon_bg"
+        android:layout_marginEnd="8dp"/>
+
+    <!-- CPU -->
+    <TextView
+        android:id="@+id/widget_cpu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CPU --%"
+        android:textColor="#FFCC00"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=" | "
+        android:textColor="#44888888"
+        android:textSize="11sp"/>
+
+    <!-- RAM -->
+    <TextView
+        android:id="@+id/widget_ram"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="RAM --%"
+        android:textColor="#00CCFF"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=" | "
+        android:textColor="#44888888"
+        android:textSize="11sp"/>
+
+    <!-- BAT -->
+    <TextView
+        android:id="@+id/widget_bat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="BAT --°C"
+        android:textColor="#00FF88"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=" | "
+        android:textColor="#44888888"
+        android:textSize="11sp"/>
+
+    <!-- TEMP -->
+    <TextView
+        android:id="@+id/widget_temp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TEMP --°C"
+        android:textColor="#FF6B00"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"/>
+
+</LinearLayout>

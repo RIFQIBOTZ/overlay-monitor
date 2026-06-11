@@ -1,6 +1,8 @@
 package com.example
 
 import android.app.ActivityManager
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -71,9 +73,31 @@ object TelemetryEngine {
                 // 4. CPU Usage
                 _cpuUsageFlow.value = getCpuUsagePercent()
 
+                // 5. Simpan data ke prefs untuk widget
+                saveWidgetData(appContext)
+
                 delay(2000)
             }
         }
+    }
+
+    private fun saveWidgetData(context: Context) {
+        try {
+            val prefs = context.getSharedPreferences("widget_data", Context.MODE_PRIVATE)
+            prefs.edit().apply {
+                putString("cpu",  "${_cpuUsageFlow.value ?: "--"}%")
+                putString("ram",  "${_ramUsageFlow.value ?: "--"}%")
+                val bat = _batteryTempFlow.value
+                putString("bat",  "${if (bat != null) String.format("%.1f", bat) else "--"}°C")
+                val temp = _cpuTempFlow.value
+                putString("temp", "${if (temp != null && temp > 0f) String.format("%.1f", temp) else "--"}°C")
+                apply()
+            }
+            // Update semua widget yang aktif
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val widgetIds = appWidgetManager.getAppWidgetIds(ComponentName(context, RogWidget::class.java))
+            widgetIds.forEach { id -> RogWidget.updateWidget(context, appWidgetManager, id) }
+        } catch (e: Exception) { /* widget mungkin belum dipasang */ }
     }
 
     private fun setupTempSensor(context: Context) {
@@ -123,28 +147,23 @@ object TelemetryEngine {
                     if (firstLine.startsWith("cpu")) {
                         val tokens = firstLine.split("\\s+".toRegex())
                         if (tokens.size >= 8) {
-                            val user = tokens[1].toLongOrNull() ?: 0L
-                            val nice = tokens[2].toLongOrNull() ?: 0L
-                            val system = tokens[3].toLongOrNull() ?: 0L
-                            val idle = tokens[4].toLongOrNull() ?: 0L
-                            val iowait = tokens[5].toLongOrNull() ?: 0L
-                            val irq = tokens[6].toLongOrNull() ?: 0L
+                            val user    = tokens[1].toLongOrNull() ?: 0L
+                            val nice    = tokens[2].toLongOrNull() ?: 0L
+                            val system  = tokens[3].toLongOrNull() ?: 0L
+                            val idle    = tokens[4].toLongOrNull() ?: 0L
+                            val iowait  = tokens[5].toLongOrNull() ?: 0L
+                            val irq     = tokens[6].toLongOrNull() ?: 0L
                             val softirq = tokens[7].toLongOrNull() ?: 0L
 
                             val activeTime = user + nice + system + irq + softirq
-                            val totalTime = activeTime + idle + iowait
+                            val totalTime  = activeTime + idle + iowait
 
                             val lastInfo = lastCpuInfo
                             if (lastInfo != null) {
-                                val lastActive = lastInfo[0]
-                                val lastTotal = lastInfo[1]
-                                val deltaActive = activeTime - lastActive
-                                val deltaTotal = totalTime - lastTotal
-
+                                val deltaActive = activeTime - lastInfo[0]
+                                val deltaTotal  = totalTime  - lastInfo[1]
                                 lastCpuInfo = longArrayOf(activeTime, totalTime)
-                                if (deltaTotal > 0L) {
-                                    return (deltaActive * 100 / deltaTotal).toInt().coerceIn(0, 100)
-                                }
+                                if (deltaTotal > 0L) return (deltaActive * 100 / deltaTotal).toInt().coerceIn(0, 100)
                             } else {
                                 lastCpuInfo = longArrayOf(activeTime, totalTime)
                             }
@@ -152,9 +171,7 @@ object TelemetryEngine {
                     }
                 }
             }
-        } catch (e: Exception) {
-            // SELinux policy blocks this on API 26+
-        }
+        } catch (e: Exception) {}
         return (15..45).random()
     }
 }
