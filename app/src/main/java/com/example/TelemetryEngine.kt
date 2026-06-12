@@ -1,8 +1,6 @@
 package com.example
 
 import android.app.ActivityManager
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -39,7 +37,6 @@ object TelemetryEngine {
     fun start(context: Context) {
         if (updateJob?.isActive == true) return
         val appContext = context.applicationContext
-
         setupTempSensor(appContext)
 
         updateJob = CoroutineScope(Dispatchers.Default).launch {
@@ -73,9 +70,6 @@ object TelemetryEngine {
                 // 4. CPU Usage
                 _cpuUsageFlow.value = getCpuUsagePercent()
 
-                // 5. Simpan data ke prefs untuk widget
-                saveWidgetData(appContext)
-
                 delay(2000)
             }
         }
@@ -83,55 +77,57 @@ object TelemetryEngine {
 
     private fun saveWidgetData(context: Context) {
         try {
+            val cpu  = _cpuUsageFlow.value
+            val ram  = _ramUsageFlow.value
+            val bat  = _batteryTempFlow.value
+            val temp = _cpuTempFlow.value
+
             val prefs = context.getSharedPreferences("widget_data", Context.MODE_PRIVATE)
             prefs.edit().apply {
-                putString("cpu",  "${_cpuUsageFlow.value ?: "--"}%")
-                putString("ram",  "${_ramUsageFlow.value ?: "--"}%")
-                val bat = _batteryTempFlow.value
+                putString("cpu",  "${cpu ?: "--"}%")
+                putString("ram",  "${ram ?: "--"}%")
                 putString("bat",  "${if (bat != null) String.format("%.1f", bat) else "--"}°C")
-                val temp = _cpuTempFlow.value
                 putString("temp", "${if (temp != null && temp > 0f) String.format("%.1f", temp) else "--"}°C")
+
+                // Progress bar (0-100)
+                putInt("cpu_prog",  cpu ?: 0)
+                putInt("ram_prog",  ram ?: 0)
+                // BAT temp: range 20-60°C → 0-100%
+                putInt("bat_prog",  if (bat != null) (((bat - 20f) / 40f) * 100f).toInt().coerceIn(0, 100) else 0)
+                // CPU temp: range 20-80°C → 0-100%
+                putInt("temp_prog", if (temp != null && temp > 0f) (((temp - 20f) / 60f) * 100f).toInt().coerceIn(0, 100) else 0)
                 apply()
             }
-            // Update semua widget yang aktif
-            val appWidgetManager = AppWidgetManager.getInstance(context)
-            val widgetIds = appWidgetManager.getAppWidgetIds(ComponentName(context, RogWidget::class.java))
-            widgetIds.forEach { id -> RogWidget.updateWidget(context, appWidgetManager, id) }
-        } catch (e: Exception) { /* widget mungkin belum dipasang */ }
+
+            // Update widget
+            RogWidget.updateAll(context)
+        } catch (e: Exception) { /* widget belum dipasang */ }
     }
 
     private fun setupTempSensor(context: Context) {
         try {
             val sm = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
             sensorManager = sm
-
             val allSensors = sm.getSensorList(Sensor.TYPE_ALL)
-
-            // Langsung cari by type 65607 (lsm6dso_temp di Infinix X6873)
             val tempSensor = allSensors.firstOrNull { sensor ->
-                sensor.type == 65607 ||
-                sensor.name.equals("lsm6dso_temp", ignoreCase = true)
+                sensor.type == 65607 || sensor.name.equals("lsm6dso_temp", ignoreCase = true)
             } ?: sm.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE)
 
             if (tempSensor != null) {
                 val listener = object : SensorEventListener {
-                    override fun onSensorChanged(event: SensorEvent) {
-                        lastSensorTemp = event.values[0]
-                    }
+                    override fun onSensorChanged(event: SensorEvent) { lastSensorTemp = event.values[0] }
                     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
                 }
                 tempSensorListener = listener
                 sm.registerListener(listener, tempSensor, SensorManager.SENSOR_DELAY_NORMAL)
             }
-        } catch (e: Exception) { /* sensor tidak tersedia */ }
+        } catch (e: Exception) {}
     }
 
     fun stop() {
         updateJob?.cancel()
         updateJob = null
-        try {
-            tempSensorListener?.let { sensorManager?.unregisterListener(it) }
-        } catch (e: Exception) {}
+        try { tempSensorListener?.let { sensorManager?.unregisterListener(it) } } catch (e: Exception) {}
         tempSensorListener = null
         sensorManager = null
         lastSensorTemp = -1.0f
@@ -154,10 +150,8 @@ object TelemetryEngine {
                             val iowait  = tokens[5].toLongOrNull() ?: 0L
                             val irq     = tokens[6].toLongOrNull() ?: 0L
                             val softirq = tokens[7].toLongOrNull() ?: 0L
-
                             val activeTime = user + nice + system + irq + softirq
                             val totalTime  = activeTime + idle + iowait
-
                             val lastInfo = lastCpuInfo
                             if (lastInfo != null) {
                                 val deltaActive = activeTime - lastInfo[0]

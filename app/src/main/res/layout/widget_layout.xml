@@ -3,87 +3,262 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:background="@drawable/widget_background"
-    android:padding="8dp">
+    android:padding="20dp">
 
-    <!-- ROG icon merah -->
     <TextView
-        android:layout_width="18dp"
-        android:layout_height="18dp"
-        android:text="✕"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ROG Overlay"
         android:textColor="#FFFFFF"
-        android:textSize="9sp"
+        android:textSize="14sp"
         android:textStyle="bold"
         android:gravity="center"
-        android:background="@drawable/widget_icon_bg"
-        android:layout_marginEnd="8dp"/>
+        android:layout_marginBottom="20dp"/>
 
-    <!-- CPU -->
-    <TextView
-        android:id="@+id/widget_cpu"
-        android:layout_width="wrap_content"
+    <!-- Row 1: RAM & CPU -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="CPU --%"
-        android:textColor="#FFCC00"
-        android:textSize="11sp"
-        android:textStyle="bold"
-        android:fontFamily="monospace"/>
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:layout_marginBottom="16dp">
+
+        <!-- RAM -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginEnd="12dp">
+
+            <TextView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/widget_circle_bg"
+                android:text="💾"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:gravity="center"
+                android:layout_marginEnd="12dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="RAM"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/widget_ram"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--%"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
+
+                <ProgressBar
+                    android:id="@+id/widget_ram_bar"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp"
+                    android:layout_marginTop="6dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressTint="#FF2222"
+                    android:progressBackgroundTint="#444444"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- CPU -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginStart="12dp">
+
+            <TextView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/widget_circle_bg"
+                android:text="⚙"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:gravity="center"
+                android:layout_marginEnd="12dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CPU"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/widget_cpu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--%"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
+
+                <ProgressBar
+                    android:id="@+id/widget_cpu_bar"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp"
+                    android:layout_marginTop="6dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressTint="#FF2222"
+                    android:progressBackgroundTint="#444444"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Row 2: TEMP & BAT -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:layout_marginBottom="24dp">
+
+        <!-- TEMP -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginEnd="12dp">
+
+            <TextView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/widget_circle_bg"
+                android:text="🌡"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:gravity="center"
+                android:layout_marginEnd="12dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Suhu CPU"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/widget_temp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--°C"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
+
+                <ProgressBar
+                    android:id="@+id/widget_temp_bar"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp"
+                    android:layout_marginTop="6dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressTint="#FF2222"
+                    android:progressBackgroundTint="#444444"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- BAT -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginStart="12dp">
+
+            <TextView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/widget_circle_bg"
+                android:text="🔋"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:gravity="center"
+                android:layout_marginEnd="12dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Baterai"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/widget_bat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--°C"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
+
+                <ProgressBar
+                    android:id="@+id/widget_bat_bar"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp"
+                    android:layout_marginTop="6dp"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressTint="#FF2222"
+                    android:progressBackgroundTint="#444444"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
 
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/widget_timestamp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text=" | "
-        android:textColor="#44888888"
-        android:textSize="11sp"/>
-
-    <!-- RAM -->
-    <TextView
-        android:id="@+id/widget_ram"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="RAM --%"
-        android:textColor="#00CCFF"
-        android:textSize="11sp"
-        android:textStyle="bold"
-        android:fontFamily="monospace"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=" | "
-        android:textColor="#44888888"
-        android:textSize="11sp"/>
-
-    <!-- BAT -->
-    <TextView
-        android:id="@+id/widget_bat"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="BAT --°C"
-        android:textColor="#00FF88"
-        android:textSize="11sp"
-        android:textStyle="bold"
-        android:fontFamily="monospace"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=" | "
-        android:textColor="#44888888"
-        android:textSize="11sp"/>
-
-    <!-- TEMP -->
-    <TextView
-        android:id="@+id/widget_temp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TEMP --°C"
-        android:textColor="#FF6B00"
-        android:textSize="11sp"
-        android:textStyle="bold"
-        android:fontFamily="monospace"/>
+        android:text="Pembaruan Terakhir: --"
+        android:textColor="#888888"
+        android:textSize="10sp"
+        android:gravity="center"/>
 
 </LinearLayout>
